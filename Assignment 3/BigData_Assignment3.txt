@@ -1,0 +1,68 @@
+Question1:
+
+review = load '/yelpdatafall/review/review.csv' using PigStorage('^');
+review_reqd = FOREACH review GENERATE $2 as business_id , $3 as stars;
+business = load '/yelpdatafall/business/business.csv' using PigStorage('^');
+business_reqd = FOREACH business GENERATE $0 as business_id,$1 as full_address,$2 as categories;
+business_filter = FILTER business_reqd BY $1 MATCHES '.*, CA.*'; 
+review_business = join review_reqd by business_id, business_filter by business_id;
+grouped_data = Group review_business by $0;
+avgratings_data =  FOREACH grouped_data generate $0 as business_id , AVG($1.stars) as avgstars, $1.full_address as full_address, $1.categories as categories;
+ordered_data = order avgratings_data by avgstars desc;
+Top10_rated = limit ordered_data 10;
+
+
+store Top10_rated into '/bxr140530/out1';
+hdfs dfs -cat /bxr140530/out1/*
+
+
+_______________________________________________________________________________________________________________________________________________________________
+
+Question2:
+
+review = load '/yelpdatafall/review/review.csv' using PigStorage('^');
+review_reqd = FOREACH review GENERATE $2 as business_id , $3 as stars;
+business = load '/yelpdatafall/business/business.csv' using PigStorage('^');
+business_reqd = FOREACH business GENERATE $0 as business_id,$1 as full_address,$2 as categories;
+business_filter = FILTER business_reqd BY NOT $1 MATCHES '.*, CA.*';
+review_business = join review_reqd by business_id, business_filter by business_id; 
+grouped_data = Group review_business by $0;
+avgratings_data =  FOREACH grouped_data generate $0 as business_id , COUNT($1.stars) as avgstars, $1.full_address as full_address, $1.categories as categories;
+ordered_data = order avgratings_data by avgstars desc;
+Top10_rated = limit ordered_data 10;
+
+store Top10_rated into '/bxr140530/out2';
+hdfs dfs -cat /bxr140530/out2/*
+
+______________________________________________________________________________________________________________________________________________________________
+
+Question3:
+
+review = load '/yelpdatafall/review/review.csv' using PigStorage('^') AS (review_id:chararray, user_id:chararray, business_id:chararray, stars:int);
+business = load '/yelpdatafall/business/business.csv' using PigStorage('^') AS (business_id:chararray, full_address:chararray, category:chararray);
+business_reqd = FILTER business BY NOT $1 MATCHES '.*, CA.*';
+review_business = COGROUP review by business_id, business_reqd by business_id;
+Top5 = limit review_business 5;
+
+store Top5 into '/baxr140530/temp3.1';
+hdfs dfs -cat bxr140530/temp3.1/*
+
+
+________________________________________________________________________________________________________________________________________________________________
+
+Question 4:
+
+review = LOAD '/yelpdatafall/review/review.csv' USING PigStorage('^') AS (reviewid:chararray, userid:chararray, businessid:chararray, star:float);
+businessratings = FOREACH review GENERATE businessid, star;
+business = LOAD '/yelpdatafall/business/business.csv' USING PigStorage('^') AS (businessid:chararray, address:chararray, categories:chararray);
+NCAbusinesses = FILTER (DISTINCT business) BY NOT(address MATCHES '.*CA.*');
+reviewedbusinesses = FOREACH (COGROUP businessratings BY businessid) GENERATE group AS businessid, COUNT(businessratings) AS reviewscount;
+datagroup = COGROUP NCAbusinesses BY businessid, reviewedbusinesses BY businessid;
+reviewed = FOREACH datagroup GENERATE flatten(NCAbusinesses), flatten(reviewedbusinesses);
+ordereddata = ORDER reviewed BY reviewedbusinesses::reviewscount DESC;
+topreviewed = LIMIT ordereddata 5;
+
+store topreviewed into '/bxr140530/temp4.0';
+hdfs dfs -cat /bxr140530/temp4.0/*
+
+

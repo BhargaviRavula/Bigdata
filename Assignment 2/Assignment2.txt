@@ -1,0 +1,174 @@
+//Below are the commands to be run in local mode
+
+val lines = sc.textFile("C:\\Users\\Bhargavi\\Desktop\\dataset\\business.csv")
+val input = readLine("Enter the Address to filter by: ").toLowerCase()
+val linesAddress = lines.map(line => line.split("\\^")).filter(line => line(1).toLowerCase().contains(input)).map(line => line(0)).distinct.collect
+
+
+//Below are the commands to be executed if run on the cluster
+
+val lines = sc.textFile("/bxr140530/dataset/business.csv")
+val input = readLine("Enter the Address to filter by: ").toLowerCase()
+val linesAddress = lines.map(line => line.split("\\^")).filter(line => line(1).toLowerCase().contains(input)).map(line => line(0)).distinct.collect
+_____________________________________________________________________________________________________________________________________________________
+
+//Below are the commands to be run in local mode
+
+val startTime = System.currentTimeMillis()
+val reviewFile = sc.textFile("C:\\Users\\Bhargavi\\Desktop\\dataset\\review.csv")
+val reviewLines = reviewFile.map(line => line.split("\\^"))
+val ratingMap = reviewLines.map(line => (line(2),line(3).toFloat))
+val avgRating = ratingMap.combineByKey(
+  (v) => (v, 1),
+  (acc: (Float, Int), v) => (acc._1 + v, acc._2 + 1),
+  (acc1: (Float, Int), acc2: (Float, Int)) => (acc1._1 + acc2._1, acc1._2 + acc2._2)
+  ).map{ case (key, value) => (key, value._1 / value._2.toFloat) }
+ 
+val sortedBusiness = avgRating.takeOrdered(avgRating.count.toInt)
+val topTen = sortedBusiness.sortWith(_._2 > _._2).take(10)
+val endTime = System.currentTimeMillis()
+println("Elapsed time: " + (endTime - startTime) + "ms")
+
+
+//Below are the commands to be executed if run on the cluster.
+//Command to start in local mode:
+//spark-shell --master local[4]
+//Command to start in yarn mode:
+//spark-shell --master yarn-client --executor-memory 4G --executor-cores 7 --num-executors 6
+
+val startTime = System.currentTimeMillis()
+val reviewFile = sc.textFile("/bxr140530/dataset/review.csv")
+val reviewLines = reviewFile.map(line => line.split("\\^"))
+val ratingMap = reviewLines.map(line => (line(2),line(3).toFloat))
+val avgRating = ratingMap.combineByKey(
+  (v) => (v, 1),
+  (acc: (Float, Int), v) => (acc._1 + v, acc._2 + 1),
+  (acc1: (Float, Int), acc2: (Float, Int)) => (acc1._1 + acc2._1, acc1._2 + acc2._2)
+  ).map{ case (key, value) => (key, value._1 / value._2.toFloat) }
+ 
+val sortedBusiness = avgRating.takeOrdered(avgRating.count.toInt)
+val topTen = sortedBusiness.sortWith(_._2 > _._2).take(10)
+val endTime = System.currentTimeMillis()
+println("Elapsed time: " + (endTime - startTime) + "ms")
+
+
+Observation: The execution time in the yarn mode is comparatively less.
+_____________________________________________________________________________________________________________________________________________________
+
+//Below are the commands to be run in local mode
+
+val startTime = System.currentTimeMillis()
+val reviewFile = sc.textFile("C:\\Users\\Bhargavi\\Desktop\\dataset\\review.csv")
+val businessFile = sc.textFile("C:\\Users\\Bhargavi\\Desktop\\dataset\\business.csv")
+val business = businessFile.map(line => line.split("\\^")).map(line => (line(0),(line(1),line(2))))
+
+val reviewLines = reviewFile.map(line => line.split("\\^"))
+val ratingMap = reviewLines.map(line => (line(2),line(3).toFloat))
+val avgRating = ratingMap.combineByKey(
+  (v) => (v, 1),
+  (acc: (Float, Int), v) => (acc._1 + v, acc._2 + 1),
+  (acc1: (Float, Int), acc2: (Float, Int)) => (acc1._1 + acc2._1, acc1._2 + acc2._2)
+  ).map{ case (key, value) => (key, value._1 / value._2.toFloat) }
+ 
+ val sortedBusiness = avgRating.sortByKey(true)
+ val topTen = sc.parallelize(sortedBusiness.sortBy(-_._2).take(10))
+ business.join(topTen).distinct.collect().foreach(x => println(x._1 + "\t" + x._2._1._1 + "\t" + x._2._1._2 + "\t" + x._2._2))
+ 
+ val endTime = System.currentTimeMillis()
+ println("Elapsed time: " + (endTime - startTime) + "ms")
+
+
+
+//Below are the commands to be executed if run on the cluster.
+//Command to start in local mode:
+//spark-shell --master local[4]
+//Command to start in yarn mode:
+//spark-shell --master yarn-client --executor-memory 4G --executor-cores 7 --num-executors 6
+
+
+val startTime = System.currentTimeMillis()
+val reviewFile = sc.textFile("/bxr140530/dataset/review.csv")
+val businessFile = sc.textFile("/bxr140530/dataset/business.csv")
+val business = businessFile.map(line => line.split("\\^")).map(line => (line(0),(line(1),line(2))))
+
+val reviewLines = reviewFile.map(line => line.split("\\^"))
+val ratingMap = reviewLines.map(line => (line(2),line(3).toFloat))
+val avgRating = ratingMap.combineByKey(
+  (v) => (v, 1),
+  (acc: (Float, Int), v) => (acc._1 + v, acc._2 + 1),
+  (acc1: (Float, Int), acc2: (Float, Int)) => (acc1._1 + acc2._1, acc1._2 + acc2._2)
+  ).map{ case (key, value) => (key, value._1 / value._2.toFloat) }
+ 
+ val sortedBusiness = avgRating.sortByKey(true)
+ val topTen = sc.parallelize(sortedBusiness.sortBy(-_._2).take(10))
+ business.join(topTen).distinct.collect().foreach(x => println(x._1 + "\t" + x._2._1._1 + "\t" + x._2._1._2 + "\t" + x._2._2))
+ 
+ val endTime = System.currentTimeMillis()
+ println("Elapsed time: " + (endTime - startTime) + "ms")
+
+_____________________________________________________________________________________________________________________________________________________
+
+//Below are the commands to be run in local mode
+
+
+val startTime = System.currentTimeMillis()
+val reviewFile = sc.textFile("C:\\Users\\Bhargavi\\Desktop\\dataset\\review.csv")
+val businessFile = sc.textFile("C:\\Users\\Bhargavi\\Desktop\\dataset\\business.csv")
+val business = businessFile.map(line => line.split("\\^")).map(line => (line(0),(line(1),line(2)))).distinct
+val broadcastBusiness = sc.broadcast(business.collectAsMap())
+
+val reviewLines = reviewFile.map(line => line.split("\\^"))
+val ratingMap = reviewLines.map(line => (line(2),line(3).toFloat))
+val avgRating = ratingMap.combineByKey(
+  (v) => (v, 1),
+  (acc: (Float, Int), v) => (acc._1 + v, acc._2 + 1),
+  (acc1: (Float, Int), acc2: (Float, Int)) => (acc1._1 + acc2._1, acc1._2 + acc2._2)
+  ).map{ case (key, value) => (key, value._1 / value._2.toFloat) }
+ 
+ val sortedBusiness = avgRating.sortByKey(true)
+ val topTen = sortedBusiness.sortBy(-_._2).take(10)
+ val joinedMap = sc.parallelize(topTen).mapPartitions({row =>
+ row.map(x => (x._1, x._2, broadcastBusiness.value.getOrElse(x._1, ("",""))))
+ }, preservesPartitioning = true)
+
+joinedMap.collect().foreach(x => println(x._1 + "\t" + x._2 + "\t" + x._3._1 + "\t" + x._3._2)) 
+ val endTime = System.currentTimeMillis()
+ println("Elapsed time: " + (endTime - startTime) + "ms")
+
+ 
+
+
+//Below are the commands to be executed if run on the cluster.
+//Command to start in local mode:
+//spark-shell --master local[4]
+//Command to start in yarn mode:
+//spark-shell --master yarn-client --executor-memory 4G --executor-cores 7 --num-executors 6
+
+
+val startTime = System.currentTimeMillis()
+val reviewFile = sc.textFile("/bxr140530/dataset/review.csv")
+val businessFile = sc.textFile("/bxr140530/dataset/business.csv")
+val business = businessFile.map(line => line.split("\\^")).map(line => (line(0),(line(1),line(2)))).distinct
+val broadcastBusiness = sc.broadcast(business.collectAsMap())
+
+val reviewLines = reviewFile.map(line => line.split("\\^"))
+val ratingMap = reviewLines.map(line => (line(2),line(3).toFloat))
+val avgRating = ratingMap.combineByKey(
+  (v) => (v, 1),
+  (acc: (Float, Int), v) => (acc._1 + v, acc._2 + 1),
+  (acc1: (Float, Int), acc2: (Float, Int)) => (acc1._1 + acc2._1, acc1._2 + acc2._2)
+  ).map{ case (key, value) => (key, value._1 / value._2.toFloat) }
+ 
+ val sortedBusiness = avgRating.sortByKey(true)
+ val topTen = sortedBusiness.sortBy(-_._2).take(10)
+ val joinedMap = sc.parallelize(topTen).mapPartitions({row =>
+ row.map(x => (x._1, x._2, broadcastBusiness.value.getOrElse(x._1, ("",""))))
+ }, preservesPartitioning = true)
+
+joinedMap.collect().foreach(x => println(x._1 + "\t" + x._2 + "\t" + x._3._1 + "\t" + x._3._2)) 
+ val endTime = System.currentTimeMillis()
+ println("Elapsed time: " + (endTime - startTime) + "ms")
+
+ 
+Execution time comparison between 3a and 3b:
+The execution time in yarn mode is slightly lower than in local mode.

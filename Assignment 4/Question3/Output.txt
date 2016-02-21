@@ -1,0 +1,15 @@
+Output: 3a
+
+Learned latent vector for User 1: DenseVector(1.3150415953313515, 2.1601464352750033, 1.6564431756503755, 1.1983186442473137, 0.9497464435629581)                                          
+Learned latent vector for User 1757: DenseVector(1.5729684906231567, 1.2306901218035566, 1.7701534619073467, 1.9850451701837937, 1.2775437360198545)                                       
+Learned latent vector for User 1759: DenseVector(1.5443194976199255, 1.58105832608981, 1.137837767274041, 0.8764711385757349, 2.152465495506611)                                           
+Learned latent vector for Movie 914: DenseVector(-0.30011128590265734, 0.638391652533199, 1.0124215830404353, 1.0095906131697578, 0.5007685602693037)                                      
+Learned latent vector for Movie 1777: DenseVector(-0.047828325399173366, 0.4027916237079069, 0.8472126634624244, 0.09764920178192327, 1.2294715489458916)                                  
+Learned latent vector for Movie 231: DenseVector(0.7756333441585994, 0.10790494244228555, 1.6094882840953666, -1.0457437560496272, 0.7479799004718259)                                     
+
+
+Output: 3b
+
+Predicted rating for User 1 - item 914: 4.346793864429326                                                                                                                                   
+predicted rating for User 1757 - item 1777: 3.6847174051700806                          
+predicted rating for User 1759 - item 231: 3.8932029662664798 

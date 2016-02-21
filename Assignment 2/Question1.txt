@@ -1,0 +1,12 @@
+//Below are the commands to run on the local system
+
+val lines = sc.textFile("C:\\Users\\Bhargavi\\Desktop\\dataset\\business.csv")
+val input = readLine("Enter the Address to filter by: ").toLowerCase()
+val linesAddress = lines.map(line => line.split("\\^")).filter(line => line(1).toLowerCase().contains(input)).map(line => line(0)).distinct.collect
+
+
+//Below are the commands to be executed if run on the cluster
+
+val lines = sc.textFile("/bxr140530/dataset/business.csv")
+val input = readLine("Enter the Address to filter by: ").toLowerCase()
+val linesAddress = lines.map(line => line.split("\\^")).filter(line => line(1).toLowerCase().contains(input)).map(line => line(0)).distinct.collect
